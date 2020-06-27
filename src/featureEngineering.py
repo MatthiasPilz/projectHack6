@@ -1,27 +1,27 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime
+import datetime
 
 
-def load_data():
-    datafile = '../data/Challenge_9_data.csv'
-    column_names = ['Id',
-                    'ProjectNumber',
-                    'ProductLineNumber',
-                    'ACTIVITY_STATUS',
-                    'DepartmentNumber',
-                    'ActivityTypeNumber',
-                    'Code',
-                    'ClassNumber',
-                    'Baseline Start Date',
-                    'Baseline Finish Date',
-                    'Planned Duration',
-                    'Forecast Start Date',
-                    'Forecast Finish Date',
-                    'Forecast Duration',
-                    'Duration Variance']
+def load_data(datafile):
+    # datafile = '../data/Challenge_9_data.csv'
+    # column_names = ['Id',
+    #                 'ProjectNumber',
+    #                 'ProductLineNumber',
+    #                 'ACTIVITY_STATUS',
+    #                 'DepartmentNumber',
+    #                 'ActivityTypeNumber',
+    #                 'Code',
+    #                 'ClassNumber',
+    #                 'Baseline Start Date',
+    #                 'Baseline Finish Date',
+    #                 'Planned Duration',
+    #                 'Forecast Start Date',
+    #                 'Forecast Finish Date',
+    #                 'Forecast Duration',
+    #                 'Duration Variance']
 
-    dateparse = lambda x: datetime.strptime(x, '%d/%m/%Y %H:%M')
+    dateparse = lambda x: datetime.datetime.strptime(x, '%d/%m/%Y %H:%M')
     raw_dataset = pd.read_csv(datafile,
                               sep=",",
                               skipinitialspace=True,
@@ -52,13 +52,26 @@ def get_quarter(x):
 
 
 def main():
-    dataset, raw_dataset = load_data()
+    original_datafile = '../data/Challenge_9_data.csv'
+    pm_datafile = '../data/Challenge 9 data PM.csv'
 
-    pmData = pd.read_csv('../data/Challenge 9 data PM.csv',
-                         sep=",",
-                         skipinitialspace=True)
+    # loading original data
+    dataset, raw_dataset = load_data(original_datafile)
+
+    # additional data by Plamen
+    pmData = pd.read_csv(pm_datafile, sep=",", skipinitialspace=True, na_values='-')
+    pmData.fillna(0, inplace=True)
     dataset['PM_Code_l1_past_mean'] = pmData['Code_l1_past_mean']
     raw_dataset['PM_Code_l1_past_mean'] = pmData['Code_l1_past_mean']
+
+    dataset['PM_Code_l2_past_mean'] = pmData['Code_l2_past_mean']
+    raw_dataset['PM_Code_l2_past_mean'] = pmData['Code_l2_past_mean']
+
+    dataset['PM_Code_l3_past_mean'] = pmData['Code_l3_past_mean']
+    raw_dataset['PM_Code_l3_past_mean'] = pmData['Code_l3_past_mean']
+
+    dataset['PM_Code_l4_past_mean'] = pmData['Code_l4_past_mean']
+    raw_dataset['PM_Code_l4_past_mean'] = pmData['Code_l4_past_mean']
 
     ###########################
     # new features
@@ -93,7 +106,7 @@ def main():
     dataset['Relative Duration Variance'] = np.divide(raw_dataset['Duration Variance'], raw_dataset['Planned Duration'])
 
     # export all
-    dataset.to_csv('../data/Challenge_9_newFeatures_all.csv')
+    dataset.to_csv('../data/Challenge_9_newFeatures_all.csv', index=False)
 
     #################################
     # filtering
@@ -102,20 +115,21 @@ def main():
     dataset = dataset[dataset['Planned Duration'] < 365]
     dataset = dataset[dataset['Forecast Duration'] > 0]
     dataset = dataset[dataset['ACTIVITY_STATUS'] == 'Completed']
-    dataset = dataset[dataset['Forecast Finish Date'].dt.year < 2021]
+    dataset = dataset[dataset['Forecast Finish Date'].dt.date < datetime.date(2020, 6, 26)]
+    dataset = dataset[dataset['Forecast Start Date'].dt.date < datetime.date(2020, 6, 26)]
 
     #################################
     # export back to csv
     #################################
-    dataset.to_csv('../data/Challenge_9_newFeatures_completed.csv')
+    dataset.to_csv('../data/Challenge_9_newFeatures_completed.csv', index=False)
 
     # split by length of planned duration
     qhigh, qlow = np.percentile(dataset['Planned Duration'], [66, 33])
-    dataset[dataset['Planned Duration'] >= qhigh].to_csv('../data/Challenge_9_newFeatures_completed_long.csv')
-    dataset[dataset['Planned Duration'] <= qlow].to_csv('../data/Challenge_9_newFeatures_completed_short.csv')
+    dataset[dataset['Planned Duration'] >= qhigh].to_csv('../data/Challenge_9_newFeatures_completed_long.csv', index=False)
+    dataset[dataset['Planned Duration'] <= qlow].to_csv('../data/Challenge_9_newFeatures_completed_short.csv', index=False)
 
     temp = dataset[dataset['Planned Duration'] < qhigh]
-    temp[temp['Planned Duration'] > qlow].to_csv('../data/Challenge_9_newFeatures_completed_medium.csv')
+    temp[temp['Planned Duration'] > qlow].to_csv('../data/Challenge_9_newFeatures_completed_medium.csv', index=False)
 
 
 if __name__ == '__main__':
