@@ -57,6 +57,12 @@ def get_quarter(x):
 def main():
     dataset, raw_dataset = load_data()
 
+    pmData = pd.read_csv('../data/Challenge 9 data PM.csv',
+                         sep=",",
+                         skipinitialspace=True)
+    dataset['pm_data'] = pmData['Code_l1_past_mean']
+    raw_dataset['pm_data'] = dataset['pm_data']
+
     # start quarter
     dataset['Baseline Start Date'] = pd.to_datetime(raw_dataset['Baseline Start Date'])
     dataset['Baseline Quarter Start'] = get_quarter(raw_dataset['Baseline Start Date'].dt.month)
@@ -80,6 +86,8 @@ def main():
     # delayed start
     dataset['Delayed Start'] = raw_dataset['Baseline Start Date'] == raw_dataset['Forecast Start Date']
 
+    dataset['Delay'] = raw_dataset['Planned Duration'] < raw_dataset['Forecast Duration']
+
     # relative duration variance
     dataset['Relative Duration Variance'] = np.divide(raw_dataset['Duration Variance'], raw_dataset['Planned Duration'])
 
@@ -90,6 +98,7 @@ def main():
     dataset.to_csv('../data/Challenge_9_newFeatures_all.csv')
     # filtered only 'completed' projects
     dataset = dataset[dataset['Planned Duration'] > 0]
+    dataset = dataset[dataset['Planned Duration'] < 365]
     dataset = dataset[dataset['Forecast Duration'] > 0]
     dataset = dataset[dataset['ACTIVITY_STATUS'] == 'Completed']
     dataset = dataset[dataset['Forecast Finish Date'].dt.year < 2021]
