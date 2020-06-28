@@ -37,14 +37,7 @@ in_data = pd.read_csv('../data/Challenge_9_newFeatures_completed_medium.csv',
                              'Relative Duration Variance': np.float64,
                              },
                       )
-
-print(in_data.loc[:, in_data.isna().any()].head())
-
-print(in_data.dtypes)
-
 print(in_data.head())
-print(in_data.columns)
-in_data.fillna(0.0, inplace=True)
 
 temp = in_data.drop('Forecast Duration', 1)
 temp = temp.drop('ACTIVITY_STATUS', 1)
