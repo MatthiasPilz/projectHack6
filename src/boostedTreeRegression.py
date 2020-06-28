@@ -8,14 +8,54 @@ import numpy as np
 
 in_data = pd.read_csv('../data/Challenge_9_newFeatures_completed_medium.csv',
                       sep=',',
-                      parse_dates=['Baseline Start Date',
-                                   'Baseline Finish Date',
-                                   'Forecast Start Date',
-                                   'Forecast Finish Date'],
+                      na_values=np.nan,
+                      dtype={'Id': np.int32,
+                             'ProjectNumber': 'category',
+                             'ProductLineNumber': 'category',
+                             'ACTIVITY_STATUS': str,
+                             'DepartmentNumber': 'category',
+                             'ActivityTypeNumber': 'category',
+                             'Code': 'category',
+                             'ClassNumber': 'category',
+                             'Planned Duration': np.int32,
+                             'Forecast Duration': np.int32,
+                             'Duration Variance': np.int32,
+                             'PM_Code_l1_past_mean': np.float64,
+                             'PM_Code_l2_past_mean': np.float64,
+                             'PM_Code_l3_past_mean': np.float64,
+                             'PM_Code_l4_past_mean': np.float64,
+                             'Baseline Quarter Start': 'category',
+                             'Baseline Start Month': 'category',
+                             'Baseline Quarter Finish': 'category',
+                             'Baseline Finish Month': 'category',
+                             'Forecast Quarter Start': 'category',
+                             'Forecast Start Month': 'category',
+                             'Forecast Quarter Finish': 'category',
+                             'Forecast Finish Month': 'category',
+                             'Delayed Start': 'bool',
+                             'Delay': 'bool',
+                             'Relative Duration Variance': np.float64,
+                             },
                       )
-print(in_data.head())
 
-X = in_data.drop('Forecast Duration')
+print(in_data.loc[:, in_data.isna().any()].head())
+
+print(in_data.dtypes)
+
+print(in_data.head())
+print(in_data.columns)
+in_data.fillna(0.0, inplace=True)
+
+temp = in_data.drop('Forecast Duration', 1)
+temp = temp.drop('ACTIVITY_STATUS', 1)
+temp = temp.drop('Id', 1)
+temp = temp.drop('Baseline Start Date', 1)
+temp = temp.drop('Baseline Finish Date', 1)
+temp = temp.drop('Forecast Start Date', 1)
+temp = temp.drop('Forecast Finish Date', 1)
+temp = pd.get_dummies(temp, prefix='', prefix_sep='')
+
+X = temp.to_numpy()
 y = np.array(in_data['Forecast Duration'])
 
 X_train, X_test, y_train, y_test = train_test_split(X, y)

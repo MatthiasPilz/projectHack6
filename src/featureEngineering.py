@@ -56,22 +56,14 @@ def main():
     pm_datafile = '../data/Challenge 9 data PM.csv'
 
     # loading original data
-    dataset, raw_dataset = load_data(original_datafile)
+    original_dataset, original_raw_dataset = load_data(original_datafile)
 
     # additional data by Plamen
-    pmData = pd.read_csv(pm_datafile, sep=",", skipinitialspace=True, na_values='-')
+    pmData = pd.read_csv(pm_datafile, sep=",", skipinitialspace=True, na_values=np.nan)
     pmData.fillna(0, inplace=True)
-    dataset['PM_Code_l1_past_mean'] = pmData['Code_l1_past_mean']
-    raw_dataset['PM_Code_l1_past_mean'] = pmData['Code_l1_past_mean']
 
-    dataset['PM_Code_l2_past_mean'] = pmData['Code_l2_past_mean']
-    raw_dataset['PM_Code_l2_past_mean'] = pmData['Code_l2_past_mean']
-
-    dataset['PM_Code_l3_past_mean'] = pmData['Code_l3_past_mean']
-    raw_dataset['PM_Code_l3_past_mean'] = pmData['Code_l3_past_mean']
-
-    dataset['PM_Code_l4_past_mean'] = pmData['Code_l4_past_mean']
-    raw_dataset['PM_Code_l4_past_mean'] = pmData['Code_l4_past_mean']
+    dataset = pd.merge(original_dataset, pmData, on='Id')
+    raw_dataset = pd.merge(original_raw_dataset, pmData, on='Id')
 
     ###########################
     # new features
